@@ -26,16 +26,27 @@ class FeatureGeneratorType(type):
 
         dag = DataDAG()
         # build DAG
-        requirements = []
+        requirements = {}
         handler_set = set()
         for function_name, function in attrs:
             dag.add_node(function_name, function)
             handler_set.add(function._feagen_will_generate['handler'])
             del function.__dict__['_feagen_will_generate']
+            requirements[function_name] = []
             if hasattr(function, '_feagen_require'):
-                requirements.append((function_name, function._feagen_require))
+                requirements[function_name] = function._feagen_require
                 del function.__dict__['_feagen_require']
-        dag.add_edges_from(requirements)
+            else:
+                requirements[function_name] = []
+
+        for function_name, function in attrs:
+            if hasattr(function, '_feagen_required_by'):
+                for func_name in function._feagen_required_by:
+                    requirements[func_name].append(function_name)
+                    # TODO check duplicated?
+                del function.__dict__['_feagen_required_by']
+
+        dag.add_edges_from(requirements.items())
         cls._dag = dag
         cls._handler_set = handler_set
 

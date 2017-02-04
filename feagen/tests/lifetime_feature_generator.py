@@ -7,11 +7,13 @@ import feagen as fg
 from feagen.decorators import (
     will_generate,
     require,
+    required_by,
 )
 
 
 class LifetimeFeatureGenerator(fg.FeatureGenerator):
 
+    @required_by('gen_label')
     @will_generate('memory', 'data_df')
     def gen_data_df(self):
         csv = StringIO("""\
@@ -25,7 +27,6 @@ id,lifetime,tested_age,weight,height,gender,income
 """)
         return {'data_df': pd.read_csv(csv, index_col='id')}
 
-    @require('data_df')
     @will_generate('h5py', 'label')
     def gen_label(self, data):
         data_df = data['data_df']

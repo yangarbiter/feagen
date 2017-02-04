@@ -14,6 +14,19 @@ def require(data_keys):
     return require_decorator
 
 
+def required_by(data_keys):
+    if isinstance(data_keys, basestring):
+        data_keys = (data_keys,)
+
+    def required_by_decorator(func):
+        # pylint: disable=protected-access
+        if not hasattr(func, '_feagen_required_by'):
+            func._feagen_required_by = []
+        func._feagen_required_by.extend(data_keys)
+        return func
+    return required_by_decorator
+
+
 def will_generate(data_handler, will_generate_keys, mode='full',
                   **handler_kwargs):
     """
